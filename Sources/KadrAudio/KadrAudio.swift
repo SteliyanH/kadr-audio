@@ -4,5 +4,5 @@
 /// large fraction of a typical music library that cannot be used at all.
 public enum KadrAudio {
     /// The package's semantic version.
-    public static let version = "0.1.0"
+    public static let version = "0.2.0"
 }

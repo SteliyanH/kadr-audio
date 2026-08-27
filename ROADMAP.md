@@ -5,7 +5,7 @@
 `MPMediaItem` → kadr `AudioTrack`, with the DRM reality handled explicitly rather
 than left for a consumer to discover in the field.
 
-## v0.2.0 — Audio session management *(planned)*
+## v0.2.0 — Audio session management ✓ shipped
 
 **The gap this closes exists today, in every consumer.** No repository in the
 family touches `AVAudioSession` — not kadr, not kadr-ui, not the reference app.
