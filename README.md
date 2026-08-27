@@ -32,6 +32,33 @@ do {
 
 The error text names the reason rather than suggesting a retry, because retrying with another Apple Music track fails identically.
 
+## Audio that is actually audible
+
+**A fresh iOS app gets the `.soloAmbient` session category, which obeys the ring/silent switch.** So a user with a muted phone opens a video editor and the preview is silent, with nothing on screen explaining why. Nothing in the kadr family configured this before v0.2, which means every consumer had the bug.
+
+```swift
+try AudioSession.configure(.preview)   // audible with the phone muted
+try AudioSession.activate()            // takes audio focus — do this when the preview appears
+// ...
+try AudioSession.deactivate()          // lets the user's music resume
+```
+
+Configuration and activation are separate calls on purpose. Activation takes audio focus from other apps, so a host that activates at launch silences the user's music for as long as the app is open.
+
+Interruptions are a stream:
+
+```swift
+for await interruption in AudioSession.interruptions {
+    switch interruption {
+    case .began: player.pause()
+    case .ended(let shouldResume) where shouldResume: player.play()
+    case .ended: break
+    }
+}
+```
+
+`shouldResume` is the system's opinion, not a formality. Ignoring it is how an app ends up talking over a phone call.
+
 ## Quick Start
 
 ```swift

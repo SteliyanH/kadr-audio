@@ -4,6 +4,44 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-08-27
+
+Audio session management. Closes a defect that was live in every consumer.
+
+### Added
+
+- **`AudioSession`** — configure, activate, deactivate, and observe interruptions.
+
+  **The bug this fixes:** nothing in the kadr family touched `AVAudioSession`, so
+  a host app got whatever session it happened to be in — `.soloAmbient` for a
+  fresh app. That category obeys the ring/silent switch, so a muted phone meant a
+  silent preview with nothing on screen explaining why. Video playback is expected
+  to ignore that switch, which is why every video app you have used does.
+
+  Two further consequences of having no session: an interruption stopped playback
+  and nothing resumed it, and starting a preview stopped the user's music without
+  anyone deciding it should.
+
+- **`AudioSessionPolicy`** — `.preview`, `.voiceover`, `.ambient`, or a custom
+  combination of input, sharing and silent-switch behaviour.
+
+  Split from `AudioSession` deliberately. Choosing a category and options is where
+  the decisions live and is worth testing; `AVAudioSession` cannot be exercised off
+  a device at all. The policy is pure and available on every platform, so it has
+  coverage. Applying it is a thin call that does not.
+
+- **`AudioSession.interruptions`** — an `AsyncStream`, carrying the system's
+  `shouldResume` opinion rather than discarding it. Ignoring that flag is how an
+  app ends up talking over a phone call.
+
+### Notes
+
+- Configuration and activation are separate calls. Activation takes audio focus,
+  so a host that activates at launch silences the user's music for as long as the
+  app is open; one that activates when a preview appears behaves well.
+- `deactivate(notifyOthers:)` defaults to `true`, which lets a paused music app
+  resume. Leaving it stopped with no way back reads as the app being broken.
+
 ## [0.1.0] - 2026-08-27
 
 First release. Music-library resolution for kadr.
