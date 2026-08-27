@@ -40,7 +40,7 @@ and exactly why it has to be handled here rather than left to each consumer.
 
 Depends on v0.2: recording needs the session configured correctly regardless.
 
-## v0.4.0 — Loudness normalisation *(planned)*
+## v0.4.0 — Loudness normalisation ✓ shipped
 
 LUFS measurement and a normalising modifier. Social platforms normalise on upload
 — Instagram, TikTok and YouTube all target around −14 LUFS — so a composition
