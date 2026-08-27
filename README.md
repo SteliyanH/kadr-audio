@@ -59,6 +59,27 @@ for await interruption in AudioSession.interruptions {
 
 `shouldResume` is the system's opinion, not a formality. Ignoring it is how an app ends up talking over a phone call.
 
+## Voiceover
+
+```swift
+let recorder = VoiceoverRecorder()
+guard await VoiceoverRecorder.requestAuthorization() else { return }
+
+try recorder.start()                     // session configured, latency measured
+// ... the performer speaks against the preview ...
+let take = try recorder.stop()
+
+video = video.audio { take.audioTrack(startingAt: previewTime) }
+```
+
+**The latency correction is the point.** A voiceover is performed against playback: the performer reacts to audio that already left the device late, and their voice arrives at the input late again. Both delays land in the recording.
+
+Wired headphones add a couple of milliseconds. **Bluetooth adds 150–200 ms** — several frames at 30 fps, and unmistakable on a lip-sync. `audioTrack(startingAt:)` places the take earlier by exactly the latency measured when recording began.
+
+Measured at `start()` rather than at construction, because plugging in AirPods between the two changes the answer by two orders of magnitude.
+
+**Required entitlement:** `NSMicrophoneUsageDescription`.
+
 ## Quick Start
 
 ```swift

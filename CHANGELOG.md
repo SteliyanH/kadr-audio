@@ -4,6 +4,49 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-08-27
+
+Voiceover recording, with the latency correction that makes it usable.
+
+### Added
+
+- **`VoiceoverRecorder`** — permission, session configuration, recording, and a
+  take that knows where it belongs on the timeline.
+
+  `AVAudioRecorder` is a handful of lines and free from Apple. What this absorbs
+  is the tedious part: asking for the microphone, configuring the session for
+  ``AudioSessionPolicy/voiceover``, and correcting the timing.
+
+- **`RecordingLatency`** — the arithmetic behind that correction.
+
+  A voiceover is performed *against* playback. The performer reacts to audio that
+  already left the device late, and their voice arrives at the input late again,
+  so the take is behind the picture by the sum. Wired headphones add a couple of
+  milliseconds; **Bluetooth adds 150–200 ms**, which is several frames at 30 fps
+  and unmistakable on a lip-sync.
+
+  Latency is measured when `start()` is called, not at construction — plugging in
+  AirPods between the two changes the answer by two orders of magnitude.
+
+- **`Voiceover.audioTrack(startingAt:)`** — places the take earlier by the
+  measured latency, clamped at zero so a take started in the first few frames
+  does not land at a negative time.
+
+- **`VoiceoverError` conforming to `LocalizedError`**, matching the rest of the
+  package.
+
+### Notes
+
+- `RecordingLatency` is a separate type for the same reason `AudioSessionPolicy`
+  is: the arithmetic is what deserves testing, and `AVAudioSession` cannot be read
+  off a device. Splitting them gives the part that matters coverage on the macOS
+  host CI runs.
+- ``RecordingLatency/isPerceptible(_:)`` uses one frame at 30 fps as the
+  threshold, so a host can warn that a wired connection gives a better take.
+  Compensation shifts a recording into alignment; it cannot undo what the
+  performer heard while performing.
+- Mono, because a voice is not stereo and the file is half the size.
+
 ## [0.2.0] - 2026-08-27
 
 Audio session management. Closes a defect that was live in every consumer.
