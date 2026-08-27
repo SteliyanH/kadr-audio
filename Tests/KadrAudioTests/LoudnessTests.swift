@@ -152,4 +152,41 @@ struct LoudnessTests {
         let after = Loudness.integrated(samples: adjusted, sampleRate: sampleRate, channels: 1)
         #expect(abs(after.integratedLUFS - (-20)) < 0.3, "landed at \(after.integratedLUFS)")
     }
+
+    // MARK: - measure(url:)
+    //
+    // The file path was missing until now, which made the whole feature
+    // unreachable: `integrated` takes samples, and nothing produced them. A doc
+    // comment even referenced `Loudness.measure(url:)` as though it existed.
+
+    @Test func measuringAFileWithNoAudioNamesTheFile() async {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("kadr-not-audio-\(UUID().uuidString).txt")
+        try? "not audio".write(to: url, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        do {
+            _ = try await Loudness.measure(url: url)
+            Issue.record("expected a failure for a text file")
+        } catch let error as AudioFileError {
+            // Either "no audio track" or "unreadable" is correct here; what matters
+            // is that it is an AudioFileError naming the file, not an AVFoundation
+            // code naming nothing.
+            #expect(error.errorDescription?.contains(url.lastPathComponent) == true)
+        } catch {
+            Issue.record("expected AudioFileError, got \(error)")
+        }
+    }
+
+    @Test func measuringAMissingFileFails() async {
+        let url = URL(fileURLWithPath: "/tmp/kadr-does-not-exist-\(UUID().uuidString).m4a")
+        do {
+            _ = try await Loudness.measure(url: url)
+            Issue.record("expected a failure for a missing file")
+        } catch is AudioFileError {
+            // Correct: the failure names the file.
+        } catch {
+            Issue.record("expected AudioFileError, got \(error)")
+        }
+    }
 }

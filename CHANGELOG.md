@@ -4,6 +4,38 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-08-27
+
+Closes the gap that made v0.4.0's headline feature unreachable.
+
+### Added
+
+- **`Loudness.measure(url:)`** — integrated loudness of a file.
+
+  v0.4.0 shipped `integrated(samples:sampleRate:channels:)` and described reading
+  samples out of an asset as "a separate, thin step". **That step did not exist.**
+  A consumer wanting to normalise a music track had to write an `AVAssetReader`
+  loop themselves, which is most of the work and none of the interesting part —
+  and a doc comment referenced `Loudness.measure(url:)` as though it were already
+  there.
+
+  Decodes to 48 kHz, which is what the BS.1770 K-weighting coefficients are
+  specified at, so measuring a file carries no sample-rate approximation. Throws
+  `AudioFileError`, so a failure names the file rather than surfacing an
+  AVFoundation code.
+
+- **A DocC catalogue.** `.spi.yml` has named `KadrAudio` as a documentation
+  target since v0.1.0 while no catalogue existed, so the Swift Package Index had
+  nothing to build but symbols. Every sibling package has one.
+
+  It leads with the three things a consumer needs before anything else: most of a
+  music library cannot be exported, a fresh app silences your preview, and a
+  Bluetooth voiceover lands late.
+
+### Tests
+
+56 → 58.
+
 ## [0.5.0] - 2026-08-27
 
 The three smaller additions, closing kadr-audio's planned surface.

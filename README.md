@@ -85,9 +85,11 @@ Measured at `start()` rather than at construction, because plugging in AirPods b
 Every social platform normalises on upload — Instagram, TikTok and YouTube all target roughly **−14 LUFS**. A composition mixed by ear is re-levelled *after* publishing, usually downward and unevenly across clips mixed at different times. Measuring first is the only way to control what the platform does rather than discover it.
 
 ```swift
-let measured = Loudness.integrated(samples: samples, sampleRate: 48_000, channels: 2)
+let measured = try await Loudness.measure(url: musicURL)
 let track = AudioTrack(url: musicURL).normalized(from: measured, to: .social)
 ```
+
+`measure(url:)` reads every sample, so it costs about what decoding the file costs. Measure once and keep the result — that is why `normalized(from:to:)` takes a measurement rather than making one. `Loudness.integrated(samples:sampleRate:channels:)` is the pure arithmetic underneath, if you already have samples.
 
 Implemented per **ITU-R BS.1770-4**: K-weighting, 400 ms blocks at 75% overlap, absolute gate at −70 LUFS and a relative gate 10 LU below.
 

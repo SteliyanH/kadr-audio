@@ -190,3 +190,80 @@ public enum Loudness {
         return -0.691 + 10 * log10(power)
     }
 }
+
+#if canImport(AVFoundation)
+import AVFoundation
+
+extension Loudness {
+
+    /// Integrated loudness of an audio or video file.
+    ///
+    /// Reads every sample, so it costs roughly what decoding the file costs — a
+    /// five-minute track is not free. Measure once and keep the result; that is why
+    /// ``AudioTrack/normalized(from:to:)`` takes a measurement rather than making
+    /// one.
+    ///
+    /// ```swift
+    /// let measured = try await Loudness.measure(url: musicURL)
+    /// let track = AudioTrack(url: musicURL).normalized(from: measured, to: .social)
+    /// ```
+    ///
+    /// - Throws: ``AudioFileError`` when the file has no readable audio, so the
+    ///   failure names the file rather than surfacing an AVFoundation code.
+    public static func measure(url: URL) async throws -> LoudnessMeasurement {
+        let name = url.lastPathComponent
+        let asset = AVURLAsset(url: url)
+
+        let tracks: [AVAssetTrack]
+        do { tracks = try await asset.loadTracks(withMediaType: .audio) }
+        catch { throw AudioFileError.unreadable(fileName: name) }
+
+        guard let track = tracks.first else {
+            throw AudioFileError.noAudioTrack(fileName: name)
+        }
+
+        let descriptions = (try? await track.load(.formatDescriptions)) ?? []
+        let basic = descriptions.first.flatMap {
+            CMAudioFormatDescriptionGetStreamBasicDescription($0)?.pointee
+        }
+        // 48 kHz is what the K-weighting coefficients are specified at, so decoding
+        // to it removes the approximation this measurement would otherwise carry.
+        let sampleRate = basic?.mSampleRate ?? 48_000
+        let channels = min(2, Int(basic?.mChannelsPerFrame ?? 1))
+
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderTrackOutput(track: track, outputSettings: [
+            AVFormatIDKey: kAudioFormatLinearPCM,
+            AVSampleRateKey: sampleRate,
+            AVNumberOfChannelsKey: channels,
+            AVLinearPCMBitDepthKey: 32,
+            AVLinearPCMIsFloatKey: true,
+            AVLinearPCMIsBigEndianKey: false,
+            AVLinearPCMIsNonInterleaved: false,
+        ])
+        guard reader.canAdd(output) else {
+            throw AudioFileError.unreadable(fileName: name)
+        }
+        reader.add(output)
+        guard reader.startReading() else {
+            throw AudioFileError.unreadable(fileName: name)
+        }
+
+        var samples: [Float] = []
+        while let buffer = output.copyNextSampleBuffer() {
+            guard let block = CMSampleBufferGetDataBuffer(buffer) else { continue }
+            let length = CMBlockBufferGetDataLength(block)
+            var data = [UInt8](repeating: 0, count: length)
+            guard CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: length, destination: &data) == kCMBlockBufferNoErr else { continue }
+            data.withUnsafeBytes { raw in
+                samples.append(contentsOf: raw.bindMemory(to: Float.self))
+            }
+        }
+
+        guard !samples.isEmpty else {
+            throw AudioFileError.empty(fileName: name)
+        }
+        return integrated(samples: samples, sampleRate: sampleRate, channels: channels)
+    }
+}
+#endif
