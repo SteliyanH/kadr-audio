@@ -1,0 +1,19 @@
+name: CI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      # --no-parallel deliberately. swift-testing parallelises by default, and
+      # kadr's suite exhausted VideoToolbox's concurrent sessions doing so — 15
+      # tests were skipped for two releases on a wrong diagnosis before that was
+      # found. This package is small enough not to hit it, but inheriting the
+      # setting costs nothing and inheriting the bug would cost a week.
+      - run: swift test --no-parallel

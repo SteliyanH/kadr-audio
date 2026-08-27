@@ -1,0 +1,12 @@
+# Opts this package in to Swift Package Index documentation hosting.
+#
+# `platform: ios` is not a default here, it is the only option: this package
+# links MediaPlayer and wraps MPMediaPickerController, neither of which exists
+# on macOS or tvOS. The package does not build for them at all.
+#
+# Validate changes at https://swiftpackageindex.com/validate-spi-manifest
+version: 1
+builder:
+  configs:
+    - platform: ios
+      documentation_targets: [KadrAudio]
