@@ -27,7 +27,7 @@ Belongs here rather than in core because `AVAudioSession` is iOS-only session
 management, not AVFoundation composition. Unambiguously free: it wraps a public
 Apple API and is tedious rather than clever.
 
-## v0.3.0 — Voiceover recording *(planned)*
+## v0.3.0 — Voiceover recording ✓ shipped
 
 `AVAudioRecorder` / `AVAudioEngine` capture, landing at a timeline offset. The
 capability is free from Apple; the work is integration — recording while the
