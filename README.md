@@ -32,6 +32,90 @@ do {
 
 The error text names the reason rather than suggesting a retry, because retrying with another Apple Music track fails identically.
 
+## Audio that is actually audible
+
+**A fresh iOS app gets the `.soloAmbient` session category, which obeys the ring/silent switch.** So a user with a muted phone opens a video editor and the preview is silent, with nothing on screen explaining why. Nothing in the kadr family configured this before v0.2, which means every consumer had the bug.
+
+```swift
+try AudioSession.configure(.preview)   // audible with the phone muted
+try AudioSession.activate()            // takes audio focus — do this when the preview appears
+// ...
+try AudioSession.deactivate()          // lets the user's music resume
+```
+
+Configuration and activation are separate calls on purpose. Activation takes audio focus from other apps, so a host that activates at launch silences the user's music for as long as the app is open.
+
+Interruptions are a stream:
+
+```swift
+for await interruption in AudioSession.interruptions {
+    switch interruption {
+    case .began: player.pause()
+    case .ended(let shouldResume) where shouldResume: player.play()
+    case .ended: break
+    }
+}
+```
+
+`shouldResume` is the system's opinion, not a formality. Ignoring it is how an app ends up talking over a phone call.
+
+## Voiceover
+
+```swift
+let recorder = VoiceoverRecorder()
+guard await VoiceoverRecorder.requestAuthorization() else { return }
+
+try recorder.start()                     // session configured, latency measured
+// ... the performer speaks against the preview ...
+let take = try recorder.stop()
+
+video = video.audio { take.audioTrack(startingAt: previewTime) }
+```
+
+**The latency correction is the point.** A voiceover is performed against playback: the performer reacts to audio that already left the device late, and their voice arrives at the input late again. Both delays land in the recording.
+
+Wired headphones add a couple of milliseconds. **Bluetooth adds 150–200 ms** — several frames at 30 fps, and unmistakable on a lip-sync. `audioTrack(startingAt:)` places the take earlier by exactly the latency measured when recording began.
+
+Measured at `start()` rather than at construction, because plugging in AirPods between the two changes the answer by two orders of magnitude.
+
+**Required entitlement:** `NSMicrophoneUsageDescription`.
+
+## Loudness
+
+Every social platform normalises on upload — Instagram, TikTok and YouTube all target roughly **−14 LUFS**. A composition mixed by ear is re-levelled *after* publishing, usually downward and unevenly across clips mixed at different times. Measuring first is the only way to control what the platform does rather than discover it.
+
+```swift
+let measured = Loudness.integrated(samples: samples, sampleRate: 48_000, channels: 2)
+let track = AudioTrack(url: musicURL).normalized(from: measured, to: .social)
+```
+
+Implemented per **ITU-R BS.1770-4**: K-weighting, 400 ms blocks at 75% overlap, absolute gate at −70 LUFS and a relative gate 10 LU below.
+
+`Loudness.integrated` takes samples rather than a URL on purpose — it is pure arithmetic, so it is testable anywhere, and the caller decides when to pay for reading a five-minute file.
+
+**Gain above 1.0 raises peaks as well as loudness**, and nothing here limits them, so a very quiet source pushed to −14 LUFS may clip. Platforms normalise downward far more often than upward, so the common direction is the safe one.
+
+## Importing an audio file
+
+A picker returns a URL, and a content-type filter is a guess — `.audio` admits files with no decodable audio track, and a user can rename anything.
+
+```swift
+let track = try await AudioFile.audioTrack(for: pickedURL)
+// throws: "“holiday.mov” doesn't contain any audio."
+//         "Pick a music or voice file — a video file won't work here."
+```
+
+One asset load turns a silent failure at export into a sentence at import.
+
+## Before recording
+
+```swift
+if AudioSession.recordingWouldCapturePlayback {
+    // On the speaker the microphone hears the playback too, so the take
+    // arrives with the backing track already in it.
+}
+```
+
 ## Quick Start
 
 ```swift
