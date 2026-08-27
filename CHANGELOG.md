@@ -4,6 +4,43 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-08-27
+
+The three smaller additions, closing kadr-audio's planned surface.
+
+### Added
+
+- **`AudioFile.inspect(_:)` and `AudioFile.audioTrack(for:)`** — check a file
+  before it reaches a composition.
+
+  A file picker returns a URL and a content-type filter is a guess: `.audio`
+  admits files with no decodable audio track, and a user can rename anything.
+  Handing such a URL to `AudioTrack` produces a composition that exports silently
+  wrong, or fails deep inside AVFoundation with an error naming neither the file
+  nor the problem. The reference app hand-rolls exactly this today — a
+  `fileImporter` with a guessed type list and no validation.
+
+  `AudioFileError` names the file and, for the common case of a video picked in an
+  audio picker, says so.
+
+- **`MusicAttribution`** — a credit line from a library item, and a `TextOverlay`
+  for it.
+
+  Returns `nil` rather than a dangling `" — "` when both fields are missing, and
+  treats whitespace-only metadata as missing. Library items with neither title nor
+  artist are common enough that this is not a theoretical case.
+
+- **`AudioSession.currentRoute` and `recordingWouldCapturePlayback`.**
+
+  On the built-in speaker the microphone hears the playback too, so a voiceover
+  recorded there arrives with the backing track already in it — and no amount of
+  latency compensation fixes that. A host can suggest headphones before a take
+  rather than after listening to a ruined one.
+
+### Tests
+
+41 → 56.
+
 ## [0.4.0] - 2026-08-27
 
 Loudness measurement and normalisation, per ITU-R BS.1770-4.

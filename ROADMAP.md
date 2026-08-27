@@ -56,7 +56,7 @@ No Apple API measures LUFS, which is the profile of a paid feature — but
 platform-normalisation correctness is what makes a free tier credible rather than
 a demo.
 
-## Smaller additions *(candidates)*
+## v0.5.0 — Smaller additions ✓ shipped
 
 All free by the same test — each wraps something Apple already gives away:
 
