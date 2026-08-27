@@ -4,6 +4,36 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.1] - 2026-08-27
+
+**The iOS slice did not compile.** Found by building it for the first time,
+before freezing the package at 1.0.
+
+### Fixed
+
+- **A non-Sendable capture in `AudioSession.interruptions`.** The observer token
+  from `addObserver(forName:)` is `any NSObjectProtocol`, which is not `Sendable`,
+  so capturing it to remove it later fails under Swift 6. Rewritten on
+  `NotificationCenter.notifications(named:)`, which owns its own lifetime and
+  ends with the task.
+
+- **`allowBluetooth` → `allowBluetoothHFP`**, deprecated since iOS 8. HFP is the
+  profile carrying a microphone, which is the entire reason a recording session
+  allows Bluetooth.
+
+### Changed
+
+- **CI now builds for iOS.** `swift test` runs on macOS, where every
+  `#if os(iOS)` body is excluded — **295 of this package's 1084 source lines**,
+  including all of `MusicLibrary`, `AudioSession` and `VoiceoverRecorder`.
+
+  So the platform this package exists for went unbuilt through six releases, and
+  did not compile. Fifty-eight passing tests said nothing about it, because none
+  of them could reach the code.
+
+  A package whose primary platform is never compiled by CI is not tested,
+  whatever the test count says.
+
 ## [0.6.0] - 2026-08-27
 
 Closes the gap that made v0.4.0's headline feature unreachable.

@@ -17,3 +17,14 @@ jobs:
       # found. This package is small enough not to hit it, but inheriting the
       # setting costs nothing and inheriting the bug would cost a week.
       - run: swift test --no-parallel
+
+      # `swift test` runs on macOS, where every `#if os(iOS)` body is excluded —
+      # which was 295 of this package's 1084 source lines, including all of
+      # MusicLibrary, AudioSession and VoiceoverRecorder. The iOS slice went
+      # unbuilt through six releases and did not compile: a non-Sendable capture
+      # in the interruption stream, and a constant deprecated since iOS 8.
+      #
+      # A package whose primary platform is never compiled by CI is not tested,
+      # whatever the test count says.
+      - name: Build for iOS
+        run: xcodebuild -scheme kadr-audio -destination 'generic/platform=iOS' -quiet build
