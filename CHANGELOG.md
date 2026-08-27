@@ -4,6 +4,41 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-08-27
+
+Loudness measurement and normalisation, per ITU-R BS.1770-4.
+
+### Added
+
+- **`Loudness.integrated(samples:sampleRate:channels:)`** — integrated loudness in
+  LUFS. K-weighting (high shelf then high pass), 400 ms blocks at 75% overlap, an
+  absolute gate at −70 LUFS and a relative gate 10 LU below what survives it.
+
+  Takes samples rather than a URL, deliberately. It is pure arithmetic, so it is
+  testable on any platform — and reading every sample of a five-minute track is a
+  cost the caller should choose to pay rather than have hidden inside a modifier.
+
+- **`Loudness.Target`** — `.social` (−14), `.podcast` (−16), `.broadcast` (−23,
+  EBU R128), or a custom value.
+
+- **`Loudness.gain(from:to:)`** and **`AudioTrack.normalized(from:to:)`.**
+
+### Notes
+
+- **Why this matters:** every social platform normalises on upload. A composition
+  mixed by ear is re-levelled after publishing, usually downward and unevenly
+  across clips mixed at different times. Measuring first is the only way to
+  control the outcome rather than discover it.
+- **A gain above 1.0 raises peaks as well as loudness** and nothing here limits
+  them, so a very quiet source pushed to −14 LUFS may clip. Documented rather than
+  silently prevented, because the caller may know the source has headroom.
+- **Silence returns a gain of 1.0.** Multiplying silence by anything is still
+  silence, and the naive calculation asks for an enormous boost.
+- The BS.1770 K-weighting coefficients are specified at 48 kHz and are applied
+  directly. That is exact for 48 kHz material and an approximation elsewhere —
+  small for the 44.1 kHz most consumer audio arrives at, and what most
+  implementations do, but an approximation, and the source says so.
+
 ## [0.3.0] - 2026-08-27
 
 Voiceover recording, with the latency correction that makes it usable.

@@ -80,6 +80,21 @@ Measured at `start()` rather than at construction, because plugging in AirPods b
 
 **Required entitlement:** `NSMicrophoneUsageDescription`.
 
+## Loudness
+
+Every social platform normalises on upload — Instagram, TikTok and YouTube all target roughly **−14 LUFS**. A composition mixed by ear is re-levelled *after* publishing, usually downward and unevenly across clips mixed at different times. Measuring first is the only way to control what the platform does rather than discover it.
+
+```swift
+let measured = Loudness.integrated(samples: samples, sampleRate: 48_000, channels: 2)
+let track = AudioTrack(url: musicURL).normalized(from: measured, to: .social)
+```
+
+Implemented per **ITU-R BS.1770-4**: K-weighting, 400 ms blocks at 75% overlap, absolute gate at −70 LUFS and a relative gate 10 LU below.
+
+`Loudness.integrated` takes samples rather than a URL on purpose — it is pure arithmetic, so it is testable anywhere, and the caller decides when to pay for reading a five-minute file.
+
+**Gain above 1.0 raises peaks as well as loudness**, and nothing here limits them, so a very quiet source pushed to −14 LUFS may clip. Platforms normalise downward far more often than upward, so the common direction is the safe one.
+
 ## Quick Start
 
 ```swift
