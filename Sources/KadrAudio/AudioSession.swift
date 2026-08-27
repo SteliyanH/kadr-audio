@@ -78,6 +78,50 @@ public enum AudioSession {
         return options
     }
 
+    // MARK: - Route
+
+    /// Where audio is currently going.
+    public enum Route: Sendable, Equatable {
+        /// The built-in speaker. Recording here captures playback as well as the
+        /// voice, so a voiceover made on speaker has the music baked into it twice.
+        case speaker
+        /// Wired headphones. Latency is negligible.
+        case wired
+        /// Bluetooth. Adds 150–200 ms round trip — see ``RecordingLatency``.
+        case bluetooth
+        /// Anything else — AirPlay, CarPlay, a USB interface.
+        case other
+    }
+
+    /// The current output route.
+    ///
+    /// Worth checking before recording a voiceover. On ``Route/speaker`` the
+    /// microphone hears the playback too, so the take arrives with the music
+    /// already in it — and no amount of latency compensation fixes that.
+    public static var currentRoute: Route {
+        let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
+        guard let port = outputs.first else { return .other }
+        switch port.portType {
+        case .builtInSpeaker, .builtInReceiver:
+            return .speaker
+        case .headphones, .usbAudio:
+            return .wired
+        case .bluetoothA2DP, .bluetoothHFP, .bluetoothLE:
+            return .bluetooth
+        default:
+            return .other
+        }
+    }
+
+    /// Whether recording on the current route will capture playback through the
+    /// microphone.
+    ///
+    /// A host can use this to suggest headphones before a take rather than after
+    /// listening to one with the backing track bleeding into it.
+    public static var recordingWouldCapturePlayback: Bool {
+        currentRoute == .speaker
+    }
+
     // MARK: - Interruptions
 
     /// What happened to the session.

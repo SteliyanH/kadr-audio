@@ -95,6 +95,27 @@ Implemented per **ITU-R BS.1770-4**: K-weighting, 400 ms blocks at 75% overlap, 
 
 **Gain above 1.0 raises peaks as well as loudness**, and nothing here limits them, so a very quiet source pushed to −14 LUFS may clip. Platforms normalise downward far more often than upward, so the common direction is the safe one.
 
+## Importing an audio file
+
+A picker returns a URL, and a content-type filter is a guess — `.audio` admits files with no decodable audio track, and a user can rename anything.
+
+```swift
+let track = try await AudioFile.audioTrack(for: pickedURL)
+// throws: "“holiday.mov” doesn't contain any audio."
+//         "Pick a music or voice file — a video file won't work here."
+```
+
+One asset load turns a silent failure at export into a sentence at import.
+
+## Before recording
+
+```swift
+if AudioSession.recordingWouldCapturePlayback {
+    // On the speaker the microphone hears the playback too, so the take
+    // arrives with the backing track already in it.
+}
+```
+
 ## Quick Start
 
 ```swift
