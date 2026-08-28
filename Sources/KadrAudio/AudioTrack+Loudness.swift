@@ -6,7 +6,7 @@ extension AudioTrack {
     /// This track at the volume that lands `measurement` on `target`.
     ///
     /// ```swift
-    /// let measured = try await Loudness.measure(url: musicURL)   // on device
+    /// let measured = try await Loudness.measure(url: musicURL)
     /// let track = AudioTrack(url: musicURL).normalized(from: measured, to: .social)
     /// ```
     ///

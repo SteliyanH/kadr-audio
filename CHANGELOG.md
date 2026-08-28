@@ -4,6 +4,68 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.1] - 2026-08-27
+
+**The iOS slice did not compile.** Found by building it for the first time,
+before freezing the package at 1.0.
+
+### Fixed
+
+- **A non-Sendable capture in `AudioSession.interruptions`.** The observer token
+  from `addObserver(forName:)` is `any NSObjectProtocol`, which is not `Sendable`,
+  so capturing it to remove it later fails under Swift 6. Rewritten on
+  `NotificationCenter.notifications(named:)`, which owns its own lifetime and
+  ends with the task.
+
+- **`allowBluetooth` → `allowBluetoothHFP`**, deprecated since iOS 8. HFP is the
+  profile carrying a microphone, which is the entire reason a recording session
+  allows Bluetooth.
+
+### Changed
+
+- **CI now builds for iOS.** `swift test` runs on macOS, where every
+  `#if os(iOS)` body is excluded — **295 of this package's 1084 source lines**,
+  including all of `MusicLibrary`, `AudioSession` and `VoiceoverRecorder`.
+
+  So the platform this package exists for went unbuilt through six releases, and
+  did not compile. Fifty-eight passing tests said nothing about it, because none
+  of them could reach the code.
+
+  A package whose primary platform is never compiled by CI is not tested,
+  whatever the test count says.
+
+## [0.6.0] - 2026-08-27
+
+Closes the gap that made v0.4.0's headline feature unreachable.
+
+### Added
+
+- **`Loudness.measure(url:)`** — integrated loudness of a file.
+
+  v0.4.0 shipped `integrated(samples:sampleRate:channels:)` and described reading
+  samples out of an asset as "a separate, thin step". **That step did not exist.**
+  A consumer wanting to normalise a music track had to write an `AVAssetReader`
+  loop themselves, which is most of the work and none of the interesting part —
+  and a doc comment referenced `Loudness.measure(url:)` as though it were already
+  there.
+
+  Decodes to 48 kHz, which is what the BS.1770 K-weighting coefficients are
+  specified at, so measuring a file carries no sample-rate approximation. Throws
+  `AudioFileError`, so a failure names the file rather than surfacing an
+  AVFoundation code.
+
+- **A DocC catalogue.** `.spi.yml` has named `KadrAudio` as a documentation
+  target since v0.1.0 while no catalogue existed, so the Swift Package Index had
+  nothing to build but symbols. Every sibling package has one.
+
+  It leads with the three things a consumer needs before anything else: most of a
+  music library cannot be exported, a fresh app silences your preview, and a
+  Bluetooth voiceover lands late.
+
+### Tests
+
+56 → 58.
+
 ## [0.5.0] - 2026-08-27
 
 The three smaller additions, closing kadr-audio's planned surface.

@@ -79,6 +79,13 @@ rediscovered:
 - **Speech-triggered auto-ducking.** Core already has manual ducking; making it
   automatic is the "smart" version, the same shape as smart crop on the pro list.
 
+## v0.6.0 — Reachable loudness, and documentation ✓ shipped
+
+- **`Loudness.measure(url:)`** — v0.4.0's measurement took samples and nothing
+  produced them, so the feature was unreachable without writing an `AVAssetReader`
+  loop. A doc comment referenced this function before it existed.
+- **DocC catalogue**, which `.spi.yml` had promised since v0.1.0.
+
 ## v1.0.0 — Production Ready
 
 

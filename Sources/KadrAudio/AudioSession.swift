@@ -73,7 +73,10 @@ public enum AudioSession {
             // Without this a voiceover session routes playback to the receiver
             // rather than the speaker, which sounds like the volume broke.
             options.insert(.defaultToSpeaker)
-            options.insert(.allowBluetooth)
+            // .allowBluetoothHFP, not the deprecated .allowBluetooth. HFP is the
+            // profile that carries a microphone, which is the whole point of
+            // allowing Bluetooth in a recording session at all.
+            options.insert(.allowBluetoothHFP)
         }
         return options
     }
@@ -147,27 +150,31 @@ public enum AudioSession {
     /// ```
     public static var interruptions: AsyncStream<Interruption> {
         AsyncStream { continuation in
-            let observer = NotificationCenter.default.addObserver(
-                forName: AVAudioSession.interruptionNotification,
-                object: nil,
-                queue: nil
-            ) { note in
-                guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
-                      let type = AVAudioSession.InterruptionType(rawValue: raw) else { return }
-                switch type {
-                case .began:
-                    continuation.yield(.began)
-                case .ended:
-                    let optionsRaw = note.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
-                    let options = AVAudioSession.InterruptionOptions(rawValue: optionsRaw)
-                    continuation.yield(.ended(shouldResume: options.contains(.shouldResume)))
-                @unknown default:
-                    break
+            // NotificationCenter.notifications(named:) rather than
+            // addObserver(forName:): the observer token is `any NSObjectProtocol`,
+            // which is not Sendable, so capturing it to remove it later does not
+            // compile under Swift 6. The async sequence owns its own lifetime and
+            // ends when the task is cancelled.
+            let task = Task {
+                for await note in NotificationCenter.default.notifications(
+                    named: AVAudioSession.interruptionNotification
+                ) {
+                    guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                          let type = AVAudioSession.InterruptionType(rawValue: raw) else { continue }
+                    switch type {
+                    case .began:
+                        continuation.yield(.began)
+                    case .ended:
+                        let optionsRaw = note.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+                        let options = AVAudioSession.InterruptionOptions(rawValue: optionsRaw)
+                        continuation.yield(.ended(shouldResume: options.contains(.shouldResume)))
+                    @unknown default:
+                        break
+                    }
                 }
+                continuation.finish()
             }
-            continuation.onTermination = { _ in
-                NotificationCenter.default.removeObserver(observer)
-            }
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 
