@@ -4,6 +4,26 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-08-28
+
+Adopts kadr 1.0.
+
+### Changed
+
+- **kadr floor raised to `1.0.0`, pinned with `from:`** rather than
+  `.upToNextMinor`. No API change here — kadr 1.0 is a stability commitment with
+  no code in it.
+
+  The pin style is the substantive part. While kadr was pre-1.0 every adapter had
+  to pin `.upToNextMinor`, because SwiftPM's `from:` does not special-case `0.x`
+  and would have accepted breaking minors. That meant each adapter accepted
+  exactly *one* kadr minor, so the family had to move in lockstep — and when it
+  drifted, no single kadr version satisfied them all and an app depending on the
+  family had no resolvable graph. `from: "1.0.0"` ends that: every adapter now
+  accepts all of `1.x`.
+
+  58 tests pass unchanged against kadr 1.0.
+
 ## [0.6.1] - 2026-08-27
 
 **The iOS slice did not compile.** Found by building it for the first time,
