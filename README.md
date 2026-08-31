@@ -1,7 +1,7 @@
 # KadrAudio
 
-[![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
-[![Platforms](https://img.shields.io/badge/Platforms-iOS%2017+%20|%20visionOS%201+-blue.svg)](https://developer.apple.com)
+[![Swift versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSteliyanH%2Fkadr-audio%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/SteliyanH/kadr-audio)
+[![Platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSteliyanH%2Fkadr-audio%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/SteliyanH/kadr-audio)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-Buy%20me%20a%20coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/steliyanh)
 
@@ -137,6 +137,19 @@ iOS 17+ and visionOS 1+. macOS is declared in the manifest so the package resolv
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md). v0.1 is music-library resolution. Loudness normalisation (LUFS) and AVAudioEngine effects are the next candidates — both belong here for the same reason, and neither is in core.
+
+## The kadr ecosystem
+
+| Package | Purpose |
+|---|---|
+| [`kadr`](https://github.com/SteliyanH/kadr) | The engine. Declarative video composition and export — clips, tracks, transitions, filters, overlays, keyframe animation. |
+| [`kadr-ui`](https://github.com/SteliyanH/kadr-ui) | SwiftUI components — preview, timeline, inspector, overlay host, keyframe editor. |
+| [`kadr-persistence`](https://github.com/SteliyanH/kadr-persistence) | Save a composition to a file and open it again. |
+| [`kadr-audio`](https://github.com/SteliyanH/kadr-audio) | Music library, voiceover recording, LUFS loudness. |
+| [`kadr-captions`](https://github.com/SteliyanH/kadr-captions) | SRT, VTT, iTT, ASS and SSA parsing and authoring. |
+| [`kadr-photos`](https://github.com/SteliyanH/kadr-photos) | Photos library integration. |
+
+And a reference application: [**Kadr Studio**](https://github.com/SteliyanH/kadr-reels-studio), a short-form vertical video editor built on all six.
 
 ## License
 
