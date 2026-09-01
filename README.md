@@ -1,11 +1,14 @@
 # KadrAudio
 
+[![CI](https://github.com/SteliyanH/kadr-audio/actions/workflows/ci.yml/badge.svg)](https://github.com/SteliyanH/kadr-audio/actions/workflows/ci.yml)
 [![Swift versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSteliyanH%2Fkadr-audio%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/SteliyanH/kadr-audio)
 [![Platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSteliyanH%2Fkadr-audio%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/SteliyanH/kadr-audio)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-Buy%20me%20a%20coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/steliyanh)
 
 **Music-library integration for [Kadr](https://github.com/SteliyanH/kadr) — resolve the user's own music into kadr `AudioTrack`s, and say something useful about the large part of a library that cannot be used.**
+
+**[API documentation →](https://swiftpackageindex.com/SteliyanH/kadr-audio/documentation)**  ·  built and hosted by the Swift Package Index for every release.
 
 KadrAudio bridges `MediaPlayer` to kadr's audio surface. It lives in its own package because kadr core is AVFoundation-only by policy — the same reason `Photos` lives in [kadr-photos](https://github.com/SteliyanH/kadr-photos). A package is justified by a dependency, not by a topic.
 
@@ -121,12 +124,12 @@ if AudioSession.recordingWouldCapturePlayback {
 ## Quick Start
 
 ```swift
-.package(url: "https://github.com/SteliyanH/kadr-audio.git", .upToNextMinor(from: "0.1.0")),
+.package(url: "https://github.com/SteliyanH/kadr-audio.git", .upToNextMinor(from: "0.7.0")),
 ```
 
 Add `KadrAudio` to your target's dependencies. `Kadr` is pulled in transitively — 0.1.x resolves `>=0.20.0, <0.21.0`.
 
-> **Use `.upToNextMinor`, not `from:`.** `from:` means `.upToNextMajor`, and SwiftPM does not special-case `0.x` — so `from: "0.1.0"` would accept every future 0.x release including breaking ones.
+> **Use `.upToNextMinor`, not `from:`.** `from:` means `.upToNextMajor`, and SwiftPM does not special-case `0.x` — so `from: "0.7.0"` would accept every future 0.x release including breaking ones.
 
 **Required entitlement:** `NSAppleMusicUsageDescription` in your app's Info.plist. Without it, requesting authorization terminates the app.
 
