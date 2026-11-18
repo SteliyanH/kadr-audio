@@ -32,6 +32,9 @@ Documentation release: the hosted docs are published for the first time.
   the macOS note now names which types exist there; and the two usage-description
   keys were called entitlements, which they are not.
 
+- **`KadrAudio.version` said `0.6.1`** through the 0.7.0 release. It now
+  matches the tag.
+
 ### Changed
 
 - **Every README code block compiles, and CI keeps it that way.**
