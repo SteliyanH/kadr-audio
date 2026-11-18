@@ -4,6 +4,42 @@ All notable changes to KadrAudio will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **The hosted documentation was never published.** The Swift Package Index
+  builds it with `xcodebuild docbuild -scheme KadrAudio`, but the package was
+  named `kadr-audio`, so Xcode's only scheme was `kadr-audio`. Every
+  documentation build failed with "does not contain a scheme named KadrAudio",
+  and the README's documentation link was a 404. The package is now named
+  `KadrAudio`, like every sibling. Dependents are unaffected:
+  `.product(name: "KadrAudio", package: "kadr-audio")` matches the package by
+  its URL. The documentation appears with the next release.
+
+- **The first README example did not compile.** It called
+  `video.music(track.volume(0.4).ducking(0.2))`, and kadr has never had
+  `Video.music(_:)`. It is now `video.audio { track.volume(0.4).ducking(0.2) }`.
+  `MusicLibrary.audioTrack(for:)`'s doc comment had the same call.
+
+- **README facts.** The kadr range said 0.20 where it is any 1.x; the roadmap
+  line listed loudness, which shipped in v0.4.0, as a future candidate; "tvOS
+  is excluded outright" was not true, since an undeclared platform still builds;
+  the macOS note now names which types exist there; and the two usage-description
+  keys were called entitlements, which they are not.
+
+### Changed
+
+- **Every README code block compiles, and CI keeps it that way.**
+  `Tools/readme-snippets.sh` copies each block into
+  `Examples/ReadmeSnippets.swift`, which the new `KadrAudioExamples` target
+  (not a product) compiles, and CI fails if the copy is stale. The snippets are
+  iOS code, so CI's iOS step is now a `swift build` for iOS, which builds every
+  target where `xcodebuild -scheme kadr-audio` built only the library.
+
+- **CI builds the documentation the way the Swift Package Index does**, so a
+  broken documentation build fails here rather than as a 404 on the website.
+
 ## [0.7.0] - 2026-08-28
 
 Adopts kadr 1.0.
