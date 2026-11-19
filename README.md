@@ -25,7 +25,7 @@ let usable = try MusicLibrary.usableSongs()
 // Or resolve and handle the refusal properly
 do {
     let track = try MusicLibrary.audioTrack(for: picked)
-    video = video.music(track.volume(0.4).ducking(0.2))
+    video = video.audio { track.volume(0.4).ducking(0.2) }
 } catch let error as MusicLibraryError {
     // "Songs from Apple Music are protected and can't be exported.
     //  Music you own or imported yourself will work."
@@ -81,7 +81,7 @@ Wired headphones add a couple of milliseconds. **Bluetooth adds 150–200 ms** �
 
 Measured at `start()` rather than at construction, because plugging in AirPods between the two changes the answer by two orders of magnitude.
 
-**Required entitlement:** `NSMicrophoneUsageDescription`.
+**Required Info.plist key:** `NSMicrophoneUsageDescription`.
 
 ## Loudness
 
@@ -123,23 +123,28 @@ if AudioSession.recordingWouldCapturePlayback {
 
 ## Quick Start
 
+<!-- readme-snippets: skip -->
 ```swift
-.package(url: "https://github.com/SteliyanH/kadr-audio.git", .upToNextMinor(from: "0.7.0")),
+.package(url: "https://github.com/SteliyanH/kadr-audio.git", .upToNextMinor(from: "0.7.1")),
 ```
 
-Add `KadrAudio` to your target's dependencies. `Kadr` is pulled in transitively — 0.1.x resolves `>=0.20.0, <0.21.0`.
+Add `KadrAudio` to your target's dependencies. `Kadr` is pulled in transitively — any 1.x from 1.0.0.
 
 > **Use `.upToNextMinor`, not `from:`.** `from:` means `.upToNextMajor`, and SwiftPM does not special-case `0.x` — so `from: "0.7.0"` would accept every future 0.x release including breaking ones.
 
-**Required entitlement:** `NSAppleMusicUsageDescription` in your app's Info.plist. Without it, requesting authorization terminates the app.
+**Required Info.plist key:** `NSAppleMusicUsageDescription`. Without it, requesting authorization terminates the app.
 
 ## Platforms
 
-iOS 17+ and visionOS 1+. macOS is declared in the manifest so the package resolves against kadr and can be tested in CI, but the MediaPlayer surface is unavailable there. tvOS is excluded outright — `MPMediaPickerController` does not exist.
+iOS 17+ and visionOS 1+.
+
+macOS 14 is declared in the manifest so the package resolves against kadr and can be tested in CI, but `MusicLibrary`, `AudioSession` and `VoiceoverRecorder` are iOS and visionOS only. What works on a Mac is the part that needs neither MediaPlayer nor `AVAudioSession`: `Loudness`, `AudioFile`, `AudioSessionPolicy`, `MusicAttribution` and `RecordingLatency`.
+
+tvOS and watchOS are not supported.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md). v0.1 is music-library resolution. Loudness normalisation (LUFS) and AVAudioEngine effects are the next candidates — both belong here for the same reason, and neither is in core.
+See [ROADMAP.md](ROADMAP.md). The planned surface has shipped — music library, audio session, voiceover, loudness, file import and attribution — v1.0 is next.
 
 ## The kadr ecosystem
 

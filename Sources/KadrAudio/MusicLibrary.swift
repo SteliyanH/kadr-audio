@@ -46,7 +46,7 @@ public enum MusicLibrary {
     ///
     /// ```swift
     /// let track = try MusicLibrary.audioTrack(for: picked)
-    /// let video = Video { clips }.music(track.volume(0.4).ducking(0.2))
+    /// let video = Video { clips }.audio { track.volume(0.4).ducking(0.2) }
     /// ```
     ///
     /// - Throws: ``MusicLibraryError/protectedItem(title:)`` for anything from

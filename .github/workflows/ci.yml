@@ -11,6 +11,13 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+      # Tools/readme-snippets.sh copies every ```swift block in README.md into
+      # Examples/ReadmeSnippets.swift, which the iOS build below compiles with the
+      # rest of the KadrAudioExamples target. This step fails if that copy is
+      # stale, so a README edit cannot skip the compiler.
+      - name: README snippets are current
+        run: Tools/readme-snippets.sh --check
+
       # --no-parallel deliberately. swift-testing parallelises by default, and
       # kadr's suite exhausted VideoToolbox's concurrent sessions doing so — 15
       # tests were skipped for two releases on a wrong diagnosis before that was
@@ -26,5 +33,25 @@ jobs:
       #
       # A package whose primary platform is never compiled by CI is not tested,
       # whatever the test count says.
-      - name: Build for iOS
-        run: xcodebuild -scheme kadr-audio -destination 'generic/platform=iOS' -quiet build
+      #
+      # `swift build` rather than `xcodebuild`, because it builds every target,
+      # and the README snippets need the iOS build: almost all of them use
+      # MusicLibrary, AudioSession or VoiceoverRecorder, so on macOS they are
+      # compiled out. Xcode generates only the `KadrAudio` product scheme for
+      # this package (it adds a `-Package` scheme only when there is more than
+      # one product), and that scheme does not build KadrAudioExamples. Test
+      # targets are not built here; `swift test` above covers them.
+      - name: Build for iOS, with the README snippets
+        run: >-
+          swift build
+          --triple arm64-apple-ios17.0
+          --sdk "$(xcrun --sdk iphoneos --show-sdk-path)"
+
+      # Exactly what the Swift Package Index runs to publish the hosted
+      # documentation, which it builds on iOS (see .spi.yml) with the scheme
+      # named after the documentation target. Through v0.7.0 that scheme did not
+      # exist, every documentation build failed, and the docs URL was a 404 that
+      # nothing here could see. This also covers the Xcode build of the library
+      # that consumers get.
+      - name: Documentation builds for iOS
+        run: xcodebuild docbuild -scheme KadrAudio -destination 'generic/platform=iOS' -quiet
