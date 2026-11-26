@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-27
+
+### Changed
+
+- **The manifest declares Swift tools 6.2**, the version kadr requires. It
+  said 6.0, which no toolchain could honour: kadr cannot be built before
+  Xcode 26. Nothing changes for anyone already building.
+- **A test keeps `KadrAudio.version` current.** It fails when the string
+  doesn't match the newest release in this file. kadr-photos' equivalent
+  said `0.1.0-dev` for eleven releases.
+
 ## [0.7.1] - 2026-11-18
 
 Documentation release: the hosted docs are published for the first time.
