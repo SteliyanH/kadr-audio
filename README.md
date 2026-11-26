@@ -125,7 +125,7 @@ if AudioSession.recordingWouldCapturePlayback {
 
 <!-- readme-snippets: skip -->
 ```swift
-.package(url: "https://github.com/SteliyanH/kadr-audio.git", .upToNextMinor(from: "0.7.1")),
+.package(url: "https://github.com/SteliyanH/kadr-audio.git", .upToNextMinor(from: "0.7.2")),
 ```
 
 Add `KadrAudio` to your target's dependencies. `Kadr` is pulled in transitively — any 1.x from 1.0.0.
